@@ -1,4 +1,4 @@
-# singleron-RD/scrna pipeline parameters
+# singleron-RD/scsnp pipeline parameters
 
 single cell RNASeq nextflow pipeline
 

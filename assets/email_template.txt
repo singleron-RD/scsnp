@@ -1,10 +1,10 @@
 Run Name: $runName
 
 <% if (success){
-    out << "## singleron-RD/scrna execution completed successfully! ##"
+    out << "## singleron-RD/scsnp execution completed successfully! ##"
 } else {
     out << """####################################################
-## singleron-RD/scrna execution completed unsuccessfully! ##
+## singleron-RD/scsnp execution completed unsuccessfully! ##
 ####################################################
 The exit status of the task that caused the workflow execution to fail was: $exitStatus.
 The full error message was:
@@ -27,5 +27,5 @@ Pipeline Configuration:
 <% out << summary.collect{ k,v -> " - $k: $v" }.join("\n") %>
 
 --
-singleron-RD/scrna
-https://github.com/singleron-RD/scrna
+singleron-RD/scsnp
+https://github.com/singleron-RD/scsnp

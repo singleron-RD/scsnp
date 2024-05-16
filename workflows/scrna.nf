@@ -8,7 +8,7 @@ include { MULTIQC                } from '../modules/local/multiqc_sgr/main'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_scrna_pipeline'
+include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_scsnp_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -286,7 +286,7 @@ process SUBSAMPLE {
     """
 }
 
-workflow SCRNA {
+workflow scsnp {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input

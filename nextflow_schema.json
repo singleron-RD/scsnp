@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/singleron-RD/scrna/master/nextflow_schema.json",
-    "title": "singleron-RD/scrna pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/singleron-RD/scsnp/master/nextflow_schema.json",
+    "title": "singleron-RD/scsnp pipeline parameters",
     "description": "single cell RNASeq nextflow pipeline",
     "type": "object",
     "definitions": {

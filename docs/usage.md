@@ -1,4 +1,4 @@
-# singleron-RD/scrna: Usage
+# singleron-RD/scsnp: Usage
 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow.
@@ -47,7 +47,7 @@ Sample_X,test
 Sample_Y,Sample_Y
 ```
 
-/workspaces/scrna_test_data/GEXSCOPE-V2
+/workspaces/scsnp_test_data/GEXSCOPE-V2
 
 ```
 Sample_Y_S1_L001_R1_001.fastq.gz  Sample_Y_S1_L002_R1_001.fastq.gz  test_R1.fastq.gz
@@ -57,16 +57,16 @@ Sample_Y_S1_L001_R2_001.fastq.gz  Sample_Y_S1_L002_R2_001.fastq.gz  test_R2.fast
 Run
 
 ```
-python scripts/samplesheet.py -m manifest.csv -f /workspaces/scrna_test_data/GEXSCOPE-V2
+python scripts/samplesheet.py -m manifest.csv -f /workspaces/scsnp_test_data/GEXSCOPE-V2
 ```
 
 samplesheet.csv
 
 ```
 sample,fastq_1,fastq_2
-Sample_X,/workspaces/scrna_test_data/GEXSCOPE-V2/test_R1.fastq.gz,/workspaces/scrna_test_data/GEXSCOPE-V2/test_R2.fastq.gz
-Sample_Y,/workspaces/scrna_test_data/GEXSCOPE-V2/Sample_Y_S1_L001_R1_001.fastq.gz,/workspaces/scrna_test_data/GEXSCOPE-V2/Sample_Y_S1_L001_R2_001.fastq.gz
-Sample_Y,/workspaces/scrna_test_data/GEXSCOPE-V2/Sample_Y_S1_L002_R1_001.fastq.gz,/workspaces/scrna_test_data/GEXSCOPE-V2/Sample_Y_S1_L002_R2_001.fastq.gz
+Sample_X,/workspaces/scsnp_test_data/GEXSCOPE-V2/test_R1.fastq.gz,/workspaces/scsnp_test_data/GEXSCOPE-V2/test_R2.fastq.gz
+Sample_Y,/workspaces/scsnp_test_data/GEXSCOPE-V2/Sample_Y_S1_L001_R1_001.fastq.gz,/workspaces/scsnp_test_data/GEXSCOPE-V2/Sample_Y_S1_L001_R2_001.fastq.gz
+Sample_Y,/workspaces/scsnp_test_data/GEXSCOPE-V2/Sample_Y_S1_L002_R1_001.fastq.gz,/workspaces/scsnp_test_data/GEXSCOPE-V2/Sample_Y_S1_L002_R2_001.fastq.gz
 ```
 
 ## Running the pipeline
@@ -74,7 +74,7 @@ Sample_Y,/workspaces/scrna_test_data/GEXSCOPE-V2/Sample_Y_S1_L002_R1_001.fastq.g
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run singleron-RD/scrna \
+nextflow run singleron-RD/scsnp \
  --input ./samplesheet.csv \
  --outdir ./results \
  --star_genome path_to_star_genome_index \
@@ -102,7 +102,7 @@ Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <
 The above pipeline run specified with a params file in yaml format:
 
 ```bash
-nextflow run singleron-RD/scrna -profile docker -params-file params.yaml
+nextflow run singleron-RD/scsnp -profile docker -params-file params.yaml
 ```
 
 with `params.yaml` containing:
@@ -118,7 +118,7 @@ If you prefer a web-based graphical interface or an interactive command-line wiz
 
 ```
 pip install nf-core
-nf-core launch singleron-RD/scrna
+nf-core launch singleron-RD/scsnp
 ```
 
 ### Create genome index
@@ -146,7 +146,7 @@ This pipeline contains a small test data. The test config file can be found [her
 Run the following command to test
 
 ```
-nextflow run singleron-RD/scrna -profile test,docker --outdir results
+nextflow run singleron-RD/scsnp -profile test,docker --outdir results
 ```
 
 ### Updating the pipeline
@@ -154,14 +154,14 @@ nextflow run singleron-RD/scrna -profile test,docker --outdir results
 When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
 
 ```bash
-nextflow pull singleron-RD/scrna
+nextflow pull singleron-RD/scsnp
 ```
 
 ### Reproducibility
 
 It is a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the [singleron-RD/scrna releases page](https://github.com/singleron-RD/scrna/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
+First, go to the [singleron-RD/scsnp releases page](https://github.com/singleron-RD/scsnp/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
 
 This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For example, at the bottom of the MultiQC reports.
 
