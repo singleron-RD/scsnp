@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-import argparse
 import itertools
 import json
 import logging
@@ -10,9 +7,9 @@ import sys
 from collections import defaultdict
 
 import pyfastx
+import utils
 
 logger = logging.getLogger(__name__)
-SOLOFEATURE = "GeneFull_Ex50pAS"
 
 
 def get_seq_str(seq, sub_pattern):
@@ -26,18 +23,11 @@ def get_seq_str(seq, sub_pattern):
     Returns:
         joined intervals seq
 
-    Raises:
-        IndexError: if seq length is not enough.
-
     >>> sub_pattern_dict = [slice(0,2)]
     >>> seq = "A" * 2 + "T" * 2
     >>> get_seq_str(seq, sub_pattern_dict)
     'AA'
     """
-    seq_len = len(seq)
-    expect_len = sub_pattern[-1].stop
-    if seq_len < expect_len:
-        raise IndexError(f"read length({seq_len} bp) less than expected length({expect_len} bp) in read: {seq}")
     return "".join([seq[x] for x in sub_pattern])
 
 
@@ -87,12 +77,6 @@ def get_mismatch_dict(seq_list, n_mismatch=1):
     return mismatch_dict
 
 
-def read_one_col(fn):
-    """read one column file into list"""
-    with open(fn) as f:
-        return [x.strip() for x in f]
-
-
 def parse_pattern(pattern, allowed="CLUNT"):
     """
     >>> pattern_dict = parse_pattern("C8L16C8L16C8L1U12T18")
@@ -116,6 +100,60 @@ def parse_pattern(pattern, allowed="CLUNT"):
         pattern_dict[x].append(slice(start, end))
         start = end
     return pattern_dict
+
+
+def get_raw_mismatch(files: list, n_mismatch: int):
+    """
+    Args:
+        files: whitelist file paths
+        n_mismatch: allowed number of mismatch bases
+    Returns:
+        raw_list
+        mismatch_list
+    """
+    raw_list, mismatch_list = [], []
+    for f in files:
+        barcodes = utils.read_one_col(f)
+        raw_list.append(set(barcodes))
+        barcode_mismatch_dict = get_mismatch_dict(barcodes, n_mismatch)
+        mismatch_list.append(barcode_mismatch_dict)
+
+    return raw_list, mismatch_list
+
+
+def check_seq_mismatch(seq_list, raw_list, mismatch_list):
+    """
+    Returns
+        valid: True if seq in mismatch_list
+        corrected: True if seq in mismatch_list but not in raw_list
+        res: joined seq
+
+    >>> seq_list = ['ATA', 'AAT', 'ATA']
+    >>> correct_set_list = [{'AAA'},{'AAA'},{'AAA'}]
+    >>> mismatch_dict_list = [get_mismatch_dict(['AAA'])] * 3
+
+    >>> check_seq_mismatch(seq_list, correct_set_list, mismatch_dict_list)
+    (True, True, 'AAA_AAA_AAA')
+
+    >>> seq_list = ['AAA', 'AAA', 'AAA']
+    >>> check_seq_mismatch(seq_list, correct_set_list, mismatch_dict_list)
+    (True, False, 'AAA_AAA_AAA')
+    """
+    valid = True
+    corrected = False
+    res = []
+    for index, seq in enumerate(seq_list):
+        if seq not in raw_list[index]:
+            if seq not in mismatch_list[index]:
+                valid = False
+                res = []
+            else:
+                corrected = True
+                res.append(mismatch_list[index][seq])
+        else:
+            res.append(seq)
+
+    return valid, corrected, "_".join(res)
 
 
 def get_protocol_dict(assets_dir):
@@ -143,7 +181,7 @@ def get_protocol_dict(assets_dir):
     return protocol_dict
 
 
-class Protocol:
+class Auto:
     """
     Auto detect singleron protocols from R1-read
     GEXSCOPE-MicroBead
@@ -155,11 +193,22 @@ class Protocol:
         """
         Args:
             assets_dir: Expects file 'protocols.json' and 'whitelist/{protocol}' folder under assets_dir
+
+        Returns:
+            protocol, protocol_dict[protocol]
         """
         self.fq1_list = fq1_list
         self.max_read = max_read
         self.sample = sample
         self.protocol_dict = get_protocol_dict(assets_dir)
+        self.mismatch_dict = {}
+        for protocol in self.protocol_dict:
+            if "bc" in self.protocol_dict[protocol]:
+                self.mismatch_dict[protocol] = get_raw_mismatch(self.protocol_dict[protocol]["bc"], 1)
+
+    def run(self):
+        protocol = self.get_protocol()
+        return protocol, self.protocol_dict[protocol]
 
     def get_protocol(self):
         """check protocol in the fq1_list"""
@@ -172,23 +221,19 @@ class Protocol:
         protocol = list(fq_protocol.values())[0]
         return protocol
 
-    def check_linker(self, seq, protocol, i):
-        """check if seq matches the linker i of protocol"""
-        linker_fn = self.protocol_dict[protocol]["linker"]
-        linker = read_one_col(linker_fn[i - 1])
-        linker_mismatch_dict = get_mismatch_dict(linker)
-
-        pattern = self.protocol_dict[protocol]["pattern"]
-        pattern_dict = parse_pattern(pattern)
-        seq_linker = seq[pattern_dict["L"][i - 1]]
-
-        return seq_linker in linker_mismatch_dict
+    def is_protocol(self, seq, protocol):
+        """check if seq matches the barcode of protocol"""
+        raw_list, mismatch_list = self.mismatch_dict[protocol]
+        bc_list = [seq[x] for x in self.protocol_dict[protocol]["pattern_dict"]["C"]]
+        valid, _corrected, _res = check_seq_mismatch(bc_list, raw_list, mismatch_list)
+        return valid
 
     def seq_protocol(self, seq):
         """
         Returns: protocol or None
 
-        >>> runner = Protocol("fake_fq1_string", "fake_sample")
+        >>> import tempfile
+        >>> runner = Auto([], "fake_sample")
         >>> seq = "TCGACTGTC" + "ATCCACGTGCTTGAGA" + "TTCTAGGAT" + "TCAGCATGCGGCTACG" + "TGCACGAGA" + "C" + "CATATCAATGGG" + "TTTTTTTTTT"
         >>> runner.seq_protocol(seq)
         'GEXSCOPE-V2'
@@ -207,7 +252,7 @@ class Protocol:
         """
 
         for protocol in ["GEXSCOPE-V2", "GEXSCOPE-V1"]:
-            if self.check_linker(seq, protocol, 1):
+            if self.is_protocol(seq, protocol):
                 return protocol
 
         # check if it is MicroBead
@@ -239,116 +284,3 @@ class Protocol:
         logger.info(f"{fq1}: {protocol}")
 
         return protocol
-
-
-class Starsolo:
-    def __init__(self, args):
-        self.args = args
-        fq1_list = args.fq1.split(",")
-        fq2_list = args.fq2.split(",")
-        fq1_number = len(fq1_list)
-        fq2_number = len(fq2_list)
-        if fq1_number != fq2_number:
-            sys.exit("fastq1 and fastq2 do not have same file number!")
-
-        self.read_command = "cat"
-        if str(fq1_list[0]).endswith(".gz"):
-            self.read_command = "zcat"
-
-        if args.protocol == "auto":
-            protocol = Protocol(fq1_list, args.sample).get_protocol()
-        else:
-            protocol = args.protocol
-        protocol_dict = get_protocol_dict(args.assets_dir)
-
-        if protocol == "new":
-            pattern = args.pattern
-            whitelist_str = args.whitelist
-        else:
-            pattern = protocol_dict[protocol]["pattern"]
-            whitelist_str = " ".join(protocol_dict[protocol].get("bc", []))
-
-        pattern_args = Starsolo.get_solo_pattern(pattern)
-        if not whitelist_str:
-            whitelist_str = args.whitelist if args.whitelist else "None"
-        self.cb_umi_args = pattern_args + f" --soloCBwhitelist {whitelist_str} "
-
-        # out cmd
-        self.cmd_fn = args.sample + ".starsolo_cmd.txt"
-        protocol_fn = args.sample + ".protocol.txt"
-
-        # write protocol
-        with open(protocol_fn, "w") as fout:
-            fout.write(f"{protocol}")
-
-    @staticmethod
-    def get_solo_pattern(pattern) -> str:
-        """
-        Returns:
-            starsolo_cb_umi_args
-        """
-        pattern_dict = parse_pattern(pattern)
-        if len(pattern_dict["U"]) != 1:
-            sys.exit(f"Error: Wrong pattern:{pattern}. \n Solution: fix pattern so that UMI only have 1 position.\n")
-        ul = pattern_dict["U"][0].start
-        ur = pattern_dict["U"][0].stop
-        umi_len = ur - ul
-
-        if len(pattern_dict["C"]) == 1:
-            solo_type = "CB_UMI_Simple"
-            start, stop = pattern_dict["C"][0].start, pattern_dict["C"][0].stop
-            cb_start = start + 1
-            cb_len = stop - start
-            umi_start = ul + 1
-            cb_str = f"--soloCBstart {cb_start} --soloCBlen {cb_len} --soloCBmatchWLtype 1MM "
-            umi_str = f"--soloUMIstart {umi_start} --soloUMIlen {umi_len} "
-        else:
-            solo_type = "CB_UMI_Complex"
-            cb_pos = " ".join([f"0_{x.start}_0_{x.stop-1}" for x in pattern_dict["C"]])
-            umi_pos = f"0_{ul}_0_{ur-1}"
-            cb_str = f"--soloCBposition {cb_pos} --soloCBmatchWLtype EditDist_2 "
-            umi_str = f"--soloUMIposition {umi_pos} --soloUMIlen {umi_len} "
-
-        starsolo_cb_umi_args = " ".join([f"--soloType {solo_type} ", cb_str, umi_str])
-        return starsolo_cb_umi_args
-
-    def write_cmd(self):
-        """
-        If UMI+CB length is not equal to the barcode read length, specify barcode read length with --soloBarcodeReadLength.
-        To avoid checking of barcode read length, specify soloBarcodeReadLength 0
-        """
-        prefix = self.args.sample + "."
-        cmd = (
-            "STAR \\\n"
-            f"{self.cb_umi_args} \\\n"
-            f"--genomeDir {self.args.genomeDir} \\\n"
-            f"--readFilesIn {self.args.fq2} {self.args.fq1} \\\n"
-            f"--readFilesCommand {self.read_command} \\\n"
-            f"--outFileNamePrefix {prefix} \\\n"
-            f"{self.args.ext_args} "
-        )
-        logger.info(cmd)
-        with open(self.cmd_fn, "w") as f:
-            f.write(cmd)
-
-
-if __name__ == "__main__":
-    """
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--sample", required=True)
-    parser.add_argument("--genomeDir", required=True)
-    parser.add_argument("--fq1", required=True)
-    parser.add_argument("--fq2", required=True)
-    parser.add_argument("--assets_dir", required=True)
-    parser.add_argument("--protocol", required=True)
-    parser.add_argument("--ext_args", required=True)
-    parser.add_argument("--whitelist")
-    parser.add_argument("--pattern")
-    # add version
-    parser.add_argument("--version", action="version", version="1.0")
-
-    args = parser.parse_args()
-
-    runner = Starsolo(args)
-    runner.write_cmd()

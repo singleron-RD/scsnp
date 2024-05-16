@@ -377,7 +377,7 @@
         }
     ],
     "properties": {
-        "subsample_analysis": {
+        "run_fastqc": {
             "type": "boolean"
         }
     }
