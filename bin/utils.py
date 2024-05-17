@@ -3,6 +3,7 @@ import json
 import logging
 import sys
 import time
+from collections import defaultdict
 from datetime import timedelta
 from functools import wraps
 
@@ -40,6 +41,13 @@ def get_logger(name, level=logging.INFO):
 def write_json(data, fn):
     with open(fn, "w") as f:
         json.dump(data, f, indent=4)
+
+
+def nested_defaultdict(dim=3, val_type=int):
+    if dim == 1:
+        return defaultdict(val_type)
+    else:
+        return defaultdict(lambda: nested_defaultdict(dim - 1, val_type=val_type))
 
 
 def add_log(func):

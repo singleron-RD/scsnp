@@ -114,43 +114,6 @@
                 }
             }
         },
-        "starsolo_options": {
-            "title": "STARSolo options",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "properties": {
-                "soloFeatures": {
-                    "type": "string",
-                    "default": "GeneFull_Ex50pAS",
-                    "description": "Quantification of different transcriptomic features.",
-                    "help_text": "https://github.com/alexdobin/STAR/issues/1460  \n--soloFeatures SJ quantifies splice junctions by calculating per-cell counts ofreads that are spliced across junctions. It will count spliced reads across annotatedand unannotated junctions, thus allowing analysis of inter-cell alternative splicing and detection of novel splice isoforms.  \n--soloFeatures Velocyto performs separate counting for spliced, unsplicedand ambiguous reads, similar to the Velocyto tool . Its output can be usedin the RNA-velocity analyses to dissect the transcriptional dynamics of the cells.  "
-                },
-                "outFilterMatchNmin": {
-                    "type": "integer",
-                    "default": 50,
-                    "description": "Alignment will be output only if the number of matched bases is higher than or equal to this value.",
-                    "help_text": "Use default 50 to filter potential short prime sequences."
-                },
-                "soloCellFilter": {
-                    "type": "string",
-                    "default": "EmptyDrops_CR 3000 0.99 10 45000 90000 1000 0.01 20000 0.001 10000",
-                    "description": "Cell-calling method.",
-                    "help_text": "https://github.com/alexdobin/STAR/blob/master/docs/STARsolo.md#cell-filtering-calling"
-                },
-                "outSAMattributes": {
-                    "type": "string",
-                    "default": "NH HI nM AS CR UR CB UB GX GN sF",
-                    "description": "Output tags in SAM/BAM.",
-                    "help_text": "https://github.com/alexdobin/STAR/blob/master/docs/STARsolo.md#bam-tags"
-                },
-                "starsolo_extra_args": {
-                    "type": "string",
-                    "default": "--clip3pAdapterSeq AAAAAAAAAAAA --outSAMtype BAM SortedByCoordinate",
-                    "description": "Extra STARSolo arguments to use."
-                }
-            }
-        },
         "max_job_request_options": {
             "title": "Max job request options",
             "type": "object",
@@ -364,9 +327,6 @@
             "$ref": "#/definitions/protocol_options"
         },
         {
-            "$ref": "#/definitions/starsolo_options"
-        },
-        {
             "$ref": "#/definitions/max_job_request_options"
         },
         {
@@ -379,6 +339,12 @@
     "properties": {
         "run_fastqc": {
             "type": "boolean"
+        },
+        "panel": {
+            "type": "string"
+        },
+        "genes": {
+            "type": "string"
         }
     }
 }

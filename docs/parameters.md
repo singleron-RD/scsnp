@@ -36,18 +36,6 @@ Genome files and parameters.
 | `pattern` | A string to locate cell barcode and UMI in R1 read. For example "C9L16C9L16C9L1U12". <details><summary>Help</summary><small>C: cell barcode<br>L: Linker sequence between segments<br>U: UMI<br>T: poly T</small></details>| `string` |  |  |  |
 | `whitelist` | Barcode whitelist files. Multiple whitelists are seperated by whitespace. | `string` |  |  |  |
 
-## STARSolo options
-
-
-
-| Parameter | Description | Type | Default | Required | Hidden |
-|-----------|-----------|-----------|-----------|-----------|-----------|
-| `soloFeatures` | Quantification of different transcriptomic features. <details><summary>Help</summary><small>https://github.com/alexdobin/STAR/issues/1460  <br>--soloFeatures SJ quantifies splice junctions by calculating per-cell counts ofreads that are spliced across junctions. It will count spliced reads across annotatedand unannotated junctions, thus allowing analysis of inter-cell alternative splicing and detection of novel splice isoforms.  <br>--soloFeatures Velocyto performs separate counting for spliced, unsplicedand ambiguous reads, similar to the Velocyto tool . Its output can be usedin the RNA-velocity analyses to dissect the transcriptional dynamics of the cells.  </small></details>| `string` | GeneFull_Ex50pAS |  |  |
-| `outFilterMatchNmin` | Alignment will be output only if the number of matched bases is higher than or equal to this value. <details><summary>Help</summary><small>Use default 50 to filter potential short prime sequences.</small></details>| `integer` | 50 |  |  |
-| `soloCellFilter` | Cell-calling method. <details><summary>Help</summary><small>https://github.com/alexdobin/STAR/blob/master/docs/STARsolo.md#cell-filtering-calling</small></details>| `string` | EmptyDrops_CR 3000 0.99 10 45000 90000 1000 0.01 20000 0.001 10000 |  |  |
-| `outSAMattributes` | Output tags in SAM/BAM. <details><summary>Help</summary><small>https://github.com/alexdobin/STAR/blob/master/docs/STARsolo.md#bam-tags</small></details>| `string` | NH HI nM AS CR UR CB UB GX GN sF |  |  |
-| `starsolo_extra_args` | Extra STARSolo arguments to use. | `string` | --clip3pAdapterSeq AAAAAAAAAAAA --outSAMtype BAM SortedByCoordinate |  |  |
-
 ## Max job request options
 
 Set the top limit for requested resources for any single job.
@@ -98,3 +86,5 @@ Less common options for the pipeline, typically set in a config file.
 | Parameter | Description | Type | Default | Required | Hidden |
 |-----------|-----------|-----------|-----------|-----------|-----------|
 | `run_fastqc` |  | `boolean` |  |  |  |
+| `panel` |  | `string` |  |  |  |
+| `genes` |  | `string` |  |  |  |

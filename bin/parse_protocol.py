@@ -1,6 +1,5 @@
 import itertools
 import json
-import logging
 import os
 import re
 import sys
@@ -9,7 +8,7 @@ from collections import defaultdict
 import pyfastx
 import utils
 
-logger = logging.getLogger(__name__)
+logger = utils.get_logger(__name__)
 
 
 def get_seq_str(seq, sub_pattern):
