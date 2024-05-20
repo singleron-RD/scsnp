@@ -4,6 +4,15 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+include { SAMTOOLS_INDEX         } from '../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX2        } from '../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FAIDX         } from '../modules/nf-core/samtools/faidx/main'
+include { GATK4_CREATESEQUENCEDICTIONARY } from '../modules/nf-core/gatk4/createsequencedictionary/main'
+include { GATK4_SPLITNCIGARREADS } from '../modules/nf-core/gatk4/splitncigarreads/main'
+include { FREEBAYES              } from '../modules/nf-core/freebayes/main'
+include { SNPEFF_DOWNLOAD        } from '../modules/nf-core/snpeff/download/main'
+include { SNPEFF_SNPEFF          } from '../modules/nf-core/snpeff/snpeff/main'
+
 include { MULTIQC                } from '../modules/local/multiqc_sgr/main'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -193,7 +202,7 @@ process STARSOLO {
     tuple val(meta), path("${meta.id}.matrix/")       , emit: matrix
     tuple val(meta), path('*.out.bam')                , emit: bam
     tuple val(meta), path('*.Solo.out')               , emit: solo_out
-    path('*Log.final.out')                            , emit: log_final
+    tuple val(meta), path('*Log.final.out')           , emit: log_final
     path "*.Solo.out/GeneFull_Ex50pAS/Summary.csv"    , emit: summary
     tuple val(meta), path("*.Solo.out/GeneFull_Ex50pAS/CellReads.stats")    , emit: read_stats
     path "${meta.id}.matrix/filtered/barcodes.tsv.gz" , emit: barcodes
@@ -248,7 +257,7 @@ process FILTER_BAM {
     val panel
 
     output:
-    path("*.filtered.bam"), emit: filtered_bam
+    tuple val(meta), path("*.filtered.bam"), emit: bam
 
     script:
     def genes_args = genes ? "--genes $genes": ""
@@ -262,6 +271,7 @@ process FILTER_BAM {
      $panel_args
     """
 }
+
 
 workflow scsnp {
 
@@ -333,6 +343,7 @@ workflow scsnp {
         star_genome,
         "${projectDir}/assets/",
     )
+    ch_multiqc_files = ch_multiqc_files.mix(STARSOLO.out.log_final.collect{it[1]})
     ch_versions = ch_versions.mix(STARSOLO.out.versions.first())
 
     // filter bam
@@ -345,6 +356,73 @@ workflow scsnp {
         { params.genes ? params.genes : "" },
         { params.panel ? params.panel : "" },
     )
+
+    // index bam
+    SAMTOOLS_INDEX (
+        FILTER_BAM.out.bam
+    )
+    ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
+
+    ch_fasta = [ [], params.fasta ]
+    // faidx fasta
+    SAMTOOLS_FAIDX (
+        ch_fasta, 
+        [ [], [] ]
+    )
+    ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
+
+    // gatk4 genome dict
+    GATK4_CREATESEQUENCEDICTIONARY(
+        ch_fasta
+    )
+    ch_versions = ch_versions.mix(GATK4_CREATESEQUENCEDICTIONARY.out.versions)
+
+    // gatk4 splitN
+    ch_input = FILTER_BAM.out.bam.concat(SAMTOOLS_INDEX.out.bai)
+        .groupTuple()
+        .map { it -> [ it[0],it[1][0],it[1][1], [] ] }                                
+    GATK4_SPLITNCIGARREADS(
+        ch_input,
+        ch_fasta,
+        SAMTOOLS_FAIDX.out.fai,
+        GATK4_CREATESEQUENCEDICTIONARY.out.dict,
+    )
+    ch_versions = ch_versions.mix(GATK4_SPLITNCIGARREADS.out.versions)
+
+    // index
+    SAMTOOLS_INDEX2(
+        GATK4_SPLITNCIGARREADS.out.bam
+    )
+
+    // freebayes
+    ch_bam = GATK4_SPLITNCIGARREADS.out.bam.concat(SAMTOOLS_INDEX2.out.bai)
+                           .groupTuple()
+                           .map { it -> [ it[0],it[1][0],it[1][1],[],[],[] ]}
+    FREEBAYES (
+        ch_bam,
+        [ [], params.fasta ], 
+        SAMTOOLS_FAIDX.out.fai,
+        ch_bam.map { it -> [[],[]] },
+        ch_bam.map { it -> [[],[]] },
+        ch_bam.map { it -> [[],[]] },
+    )
+    ch_versions = ch_versions.mix(FREEBAYES.out.versions.first())
+
+    // snpeff
+    snpeff_db = "${params.snpeff_genome}.${params.snpeff_cache_version}"
+    SNPEFF_DOWNLOAD (
+        [ [id: snpeff_db], params.snpeff_genome, params.snpeff_cache_version]
+    )
+    ch_versions = ch_versions.mix(SNPEFF_DOWNLOAD.out.versions)
+    
+    SNPEFF_SNPEFF (
+        FREEBAYES.out.vcf,
+        snpeff_db,
+        SNPEFF_DOWNLOAD.out.cache,
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(SNPEFF_SNPEFF.out.report.collect{it[1]})
+    ch_versions = ch_versions.mix(SNPEFF_SNPEFF.out.versions.first())
+
 
     //
     // Collate and save software versions
@@ -370,7 +448,7 @@ workflow scsnp {
     MULTIQC (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
-        [],//ch_multiqc_custom_config.toList(),
+        ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList()
     )
 
