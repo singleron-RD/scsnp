@@ -13,13 +13,19 @@ def extract_fields(record, samples):
     extract fields from a snpeff annotated VCF record; ANN columns are 0-based
     CHROM, POS, REF, ALT, ANN[*].GENE(col 3), ANN[*].HGVS_C(col 9), ANN[*].HGVS_P(col 10)
     https://pcingola.github.io/SnpEff/snpsift/extractfields/
+    Returns:
+        name: str
+        genotypes: list of str,e.g. ['0/0', '0/1', '1/1', 'NA']
+
     """
     ann = record.info["ANN"][0].split("|")
+    effect = ann[1]
+    impact = ann[2]
     gene = ann[3]
+    rank = ann[8]
     hgvs_c = ann[9]
     hgvs_p = ann[10]
-    id = hgvs_p if hgvs_p else hgvs_c
-    name = f"{gene}-{id}"
+    name = "-".join([gene, hgvs_c, hgvs_p])
 
     genotypes = []
     for sample in samples:
@@ -31,7 +37,16 @@ def extract_fields(record, samples):
             genotype_str = "/".join([str(g1), str(g2)])
         genotypes.append(genotype_str)
 
-    return name, genotypes
+    meta = {
+        "Effect": effect,
+        "Impact": impact,
+        "Gene": gene,
+        "Rank": rank,
+        "HGVS_C": hgvs_c,
+        "HGVS_P": hgvs_p,
+    }
+
+    return name, genotypes, meta
 
 
 def parse_vcf(vcf_fn):
@@ -40,15 +55,17 @@ def parse_vcf(vcf_fn):
     """
     vcf = pysam.VariantFile(vcf_fn)
     samples = list(vcf.header.samples)
-    variant_dict = {}
-    stats_dict = defaultdict(dict)
+    name_gts = {}
+    name_gt_count = defaultdict(dict)
+    name_meta = {}
     for record in vcf:
-        name, genotypes = extract_fields(record, samples)
-        variant_dict[name] = genotypes
+        name, genotypes, meta = extract_fields(record, samples)
+        name_meta[name] = meta
+        name_gts[name] = genotypes
         for gt in ["0/0", "0/1", "1/1", "NA"]:
-            stats_dict[name][gt] = genotypes.count(gt)
-    df = pd.DataFrame(variant_dict, index=samples)
-    return df, stats_dict
+            name_gt_count[name][gt] = genotypes.count(gt)
+    df = pd.DataFrame(name_gts, index=samples)
+    return df, name_gt_count, name_meta
 
 
 def main():
@@ -58,11 +75,13 @@ def main():
     args = parser.parse_args()
 
     gt_csv_fn = f"{args.sample}.GT.csv"
-    stat_json_fn = f"{args.sample}.stats.json"
+    count_json_fn = f"{args.sample}.count.json"
+    meta_fn = f"{args.sample}.meta.json"
 
-    df, stats_dict = parse_vcf(args.vcf)
+    df, name_gt_count, name_meta = parse_vcf(args.vcf)
     df.to_csv(gt_csv_fn)
-    utils.write_json(stats_dict, stat_json_fn)
+    utils.write_json(name_gt_count, count_json_fn)
+    utils.write_json(name_meta, meta_fn)
 
 
 if __name__ == "__main__":

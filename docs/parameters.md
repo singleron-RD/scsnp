@@ -25,6 +25,34 @@ Genome files and parameters.
 | `genome_name` | The generated STAR genome index will be saved under this folder. It can then be used for future pipeline runs, reducing processing times. | `string` | star_genome |  |  |
 | `keep_attributes` | Attributes in gtf to keep. | `string` | gene_biotype=protein_coding,lncRNA,antisense,IG_LV_gene,IG_V_gene,IG_V_pseudogene,IG_D_gene,IG_J_gene,IG_J_pseudogene,IG_C_gene,IG_C_pseudogene,TR_V_gene,TR_V_pseudogene,TR_D_gene,TR_J_gene,TR_J_pseudogene,TR_C_gene; |  |  |
 | `star_genome_additional_args` | Additional args to use when generate STAR genome directory. | `string` |  |  |  |
+| `snpeff_genome` |  | `string` | GRCh38 |  |  |
+| `snpeff_cache_version` |  | `string` | mane.1.0.ensembl |  |  |
+
+## Target genes
+
+
+
+| Parameter | Description | Type | Default | Required | Hidden |
+|-----------|-----------|-----------|-----------|-----------|-----------|
+| `panel` |  | `string` |  |  |  |
+| `genes` |  | `string` |  |  |  |
+
+## Variant args
+
+
+
+| Parameter | Description | Type | Default | Required | Hidden |
+|-----------|-----------|-----------|-----------|-----------|-----------|
+| `freebayes_args` |  | `string` | --use-best-n-alleles 2 --limit-coverage 100 --min-alternate-fraction 0.4 --min-alternate-count 5 --prob-contamination 0.05 --standard-filters |  |  |
+| `bcftools_filter_args` |  | `string` | -e "QUAL<1000" -Oz |  |  |
+
+## Optional module
+
+
+
+| Parameter | Description | Type | Default | Required | Hidden |
+|-----------|-----------|-----------|-----------|-----------|-----------|
+| `run_fastqc` |  | `boolean` |  |  |  |
 
 ## Protocol options
 
@@ -80,11 +108,3 @@ Less common options for the pipeline, typically set in a config file.
 | `validationShowHiddenParams` | Show all params when using `--help` <details><summary>Help</summary><small>By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters.</small></details>| `boolean` |  |  | True |
 | `validationFailUnrecognisedParams` | Validation of parameters fails when an unrecognised parameter is found. <details><summary>Help</summary><small>By default, when an unrecognised parameter is found, it returns a warinig.</small></details>| `boolean` |  |  | True |
 | `validationLenientMode` | Validation of parameters in lenient more. <details><summary>Help</summary><small>Allows string values that are parseable as numbers or booleans. For further information see [JSONSchema docs](https://github.com/everit-org/json-schema#lenient-mode).</small></details>| `boolean` |  |  | True |
-
-## Other parameters
-
-| Parameter | Description | Type | Default | Required | Hidden |
-|-----------|-----------|-----------|-----------|-----------|-----------|
-| `run_fastqc` |  | `boolean` |  |  |  |
-| `panel` |  | `string` |  |  |  |
-| `genes` |  | `string` |  |  |  |

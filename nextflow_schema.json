@@ -81,6 +81,55 @@
                 "star_genome_additional_args": {
                     "type": "string",
                     "description": "Additional args to use when generate STAR genome directory."
+                },
+                "snpeff_genome": {
+                    "type": "string",
+                    "default": "GRCh38"
+                },
+                "snpeff_cache_version": {
+                    "type": "string",
+                    "default": "mane.1.0.ensembl"
+                }
+            }
+        },
+        "target_genes": {
+            "title": "Target genes",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "panel": {
+                    "type": "string"
+                },
+                "genes": {
+                    "type": "string"
+                }
+            }
+        },
+        "variant_args": {
+            "title": "Variant args",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "freebayes_args": {
+                    "type": "string",
+                    "default": "--use-best-n-alleles 2 --limit-coverage 100 --min-alternate-fraction 0.4 --min-alternate-count 5 --prob-contamination 0.05 --standard-filters"
+                },
+                "bcftools_filter_args": {
+                    "type": "string",
+                    "default": "-e \"QUAL<1000\" -Oz"
+                }
+            }
+        },
+        "optional_module": {
+            "title": "Optional module",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "run_fastqc": {
+                    "type": "boolean"
                 }
             }
         },
@@ -324,6 +373,15 @@
             "$ref": "#/definitions/genome"
         },
         {
+            "$ref": "#/definitions/target_genes"
+        },
+        {
+            "$ref": "#/definitions/variant_args"
+        },
+        {
+            "$ref": "#/definitions/optional_module"
+        },
+        {
             "$ref": "#/definitions/protocol_options"
         },
         {
@@ -335,16 +393,5 @@
         {
             "$ref": "#/definitions/generic_options"
         }
-    ],
-    "properties": {
-        "run_fastqc": {
-            "type": "boolean"
-        },
-        "panel": {
-            "type": "string"
-        },
-        "genes": {
-            "type": "string"
-        }
-    }
+    ]
 }

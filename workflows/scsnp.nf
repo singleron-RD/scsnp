@@ -363,7 +363,7 @@ workflow scsnp {
         SAMTOOLS_FAIDX.out.fai,
         GATK4_CREATESEQUENCEDICTIONARY.out.dict,
     )
-    ch_versions = ch_versions.mix(GATK4_SPLITNCIGARREADS.out.versions)
+    ch_versions = ch_versions.mix(GATK4_SPLITNCIGARREADS.out.versions.first())
 
     // index
     SAMTOOLS_INDEX2(
@@ -402,14 +402,15 @@ workflow scsnp {
         snpeff_db,
         SNPEFF_DOWNLOAD.out.cache,
     )
-    ch_multiqc_files = ch_multiqc_files.mix(SNPEFF_SNPEFF.out.report.collect{it[1]})
+    //ch_multiqc_files = ch_multiqc_files.mix(SNPEFF_SNPEFF.out.report.collect{it[1]})
     ch_versions = ch_versions.mix(SNPEFF_SNPEFF.out.versions.first())
 
     // convert to csv and stats
     VCF_STATS (
         SNPEFF_SNPEFF.out.vcf
     )
-
+    ch_multiqc_files = ch_multiqc_files.mix(VCF_STATS.out.count_json.collect{it[1]})
+        .mix(VCF_STATS.out.meta_json.collect{it[1]})
     //
     // Collate and save software versions
     //
@@ -435,7 +436,8 @@ workflow scsnp {
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
+        ch_multiqc_logo.toList(),
+        "${projectDir}/multiqc_sgr/"
     )
 
     emit:
