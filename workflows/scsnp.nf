@@ -10,8 +10,12 @@ include { SAMTOOLS_FAIDX         } from '../modules/nf-core/samtools/faidx/main'
 include { GATK4_CREATESEQUENCEDICTIONARY } from '../modules/nf-core/gatk4/createsequencedictionary/main'
 include { GATK4_SPLITNCIGARREADS } from '../modules/nf-core/gatk4/splitncigarreads/main'
 include { FREEBAYES              } from '../modules/nf-core/freebayes/main'
+include { BCFTOOLS_FILTER        } from '../modules/nf-core/bcftools/filter/main'
 include { SNPEFF_DOWNLOAD        } from '../modules/nf-core/snpeff/download/main'
 include { SNPEFF_SNPEFF          } from '../modules/nf-core/snpeff/snpeff/main'
+
+include { FILTER_BAM             } from '../modules/local/filter_bam'
+include { VCF_STATS              } from '../modules/local/vcf_stats/vcf_stats'
 
 include { MULTIQC                } from '../modules/local/multiqc_sgr/main'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
@@ -244,34 +248,6 @@ END_VERSIONS
 """
 }
 
-process FILTER_BAM {
-    tag "$meta.id"
-    label 'process_single'
-
-    conda 'bioconda::pysam==0.22.1'
-    container "biocontainers/pysam:0.22.1--py38h15b938a_0"
-
-    input:
-    tuple val(meta), path(bam), path(match_barcode)
-    val genes
-    val panel
-
-    output:
-    tuple val(meta), path("*.filtered.bam"), emit: bam
-
-    script:
-    def genes_args = genes ? "--genes $genes": ""
-    def panel_args = panel ? "--panel $panel": ""
-    """
-    filter_bam.py \
-     --bam $bam \
-     --match_barcode_file $match_barcode \
-     --sample ${meta.id} \
-     $genes_args \
-     $panel_args
-    """
-}
-
 
 workflow scsnp {
 
@@ -408,6 +384,12 @@ workflow scsnp {
     )
     ch_versions = ch_versions.mix(FREEBAYES.out.versions.first())
 
+    // bcftools filter
+    BCFTOOLS_FILTER (
+        FREEBAYES.out.vcf
+    )
+    ch_versions = ch_versions.mix(BCFTOOLS_FILTER.out.versions.first())
+
     // snpeff
     snpeff_db = "${params.snpeff_genome}.${params.snpeff_cache_version}"
     SNPEFF_DOWNLOAD (
@@ -416,13 +398,17 @@ workflow scsnp {
     ch_versions = ch_versions.mix(SNPEFF_DOWNLOAD.out.versions)
     
     SNPEFF_SNPEFF (
-        FREEBAYES.out.vcf,
+        BCFTOOLS_FILTER.out.vcf,
         snpeff_db,
         SNPEFF_DOWNLOAD.out.cache,
     )
     ch_multiqc_files = ch_multiqc_files.mix(SNPEFF_SNPEFF.out.report.collect{it[1]})
     ch_versions = ch_versions.mix(SNPEFF_SNPEFF.out.versions.first())
 
+    // convert to csv and stats
+    VCF_STATS (
+        SNPEFF_SNPEFF.out.vcf
+    )
 
     //
     // Collate and save software versions
