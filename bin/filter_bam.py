@@ -8,6 +8,7 @@
 """
 
 import argparse
+from collections import defaultdict
 
 import pysam
 import utils
@@ -20,6 +21,8 @@ class FilterBam:
         self.genes = set(args.genes.split(","))
         self.out_bam_file = f"{args.sample}.filtered.bam"
         self.dup_dict = utils.nested_defaultdict(dim=4)
+        self.gene_read = defaultdict(int)
+        self.cb_useRead = defaultdict(int)
 
     def filter(self, max_dup=1):
         """
@@ -47,13 +50,37 @@ class FilterBam:
                         continue
                     rn, rs = record.reference_name, record.reference_start
                     self.dup_dict[cb][umi][rn][rs] += 1
+                    self.gene_read[gn] += 1
                     if self.dup_dict[cb][umi][rn][rs] > max_dup:
                         continue
+                    self.cb_useRead[cb] += 1
                     record.set_tag(tag="RG", value=record.get_tag("CB"), value_type="Z")
                     writer.write(record)
 
+    def write_stats(self):
+        gene_fn = f"{self.args.sample}.scsnp.gene.json"
+        stats_fn = f"{self.args.sample}.scsnp.filter_bam.stats.json"
+        utils.write_json(self.gene_read, gene_fn)
+
+        x = sum(self.cb_useRead.values()) / len(self.cb_useRead)
+        stats = {"Mean Used Reads per Cell": x}
+        d = self.dup_dict
+        total = 0
+        distinct = 0
+        for cb in d:
+            for umi in d[cb]:
+                for rn in d[cb][umi]:
+                    for rs in d[cb][umi][rn]:
+                        distinct += 1
+                        total += d[cb][umi][rn][rs]
+        saturation = 1 - float(distinct) / total
+        stats.update({"Saturation": saturation})
+
+        utils.write_json(stats, stats_fn)
+
     def run(self):
         self.filter()
+        self.write_stats()
 
 
 if __name__ == "__main__":

@@ -9,9 +9,11 @@ process VCF_STATS {
     tuple val(meta), path(vcf)
 
     output:
-    tuple val(meta), path("*.count.json"), emit: count_json
+    tuple val(meta), path("*.json"), emit: json
+    tuple val(meta), path("*.scsnp.count.json"), emit: count_json
     tuple val(meta), path("*.GT.csv"), emit: gt_csv
-    tuple val(meta), path("*.meta.json"), emit: meta_json
+    tuple val(meta), path("*.scsnp.meta.json"), emit: meta_json
+    tuple val(meta), path("*.scsnp.*stats.json"), emit: stats_json
 
     script:
     """

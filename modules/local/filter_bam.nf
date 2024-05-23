@@ -12,6 +12,7 @@ process FILTER_BAM {
 
     output:
     tuple val(meta), path("*.filtered.bam"), emit: bam
+    tuple val(meta), path("*.json"), emit: json
 
     script:
     def genes_args = genes ? "--genes $genes": ""

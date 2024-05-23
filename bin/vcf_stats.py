@@ -75,13 +75,15 @@ def main():
     args = parser.parse_args()
 
     gt_csv_fn = f"{args.sample}.GT.csv"
-    count_json_fn = f"{args.sample}.count.json"
-    meta_fn = f"{args.sample}.meta.json"
+    count_json_fn = f"{args.sample}.scsnp.count.json"
+    meta_fn = f"{args.sample}.scsnp.meta.json"
+    stats_fn = f"{args.sample}.scsnp.vcf.stats.json"
 
     df, name_gt_count, name_meta = parse_vcf(args.vcf)
     df.to_csv(gt_csv_fn)
     utils.write_json(name_gt_count, count_json_fn)
     utils.write_json(name_meta, meta_fn)
+    utils.write_json({"Number of variant after filtering": len(name_meta)}, stats_fn)
 
 
 if __name__ == "__main__":

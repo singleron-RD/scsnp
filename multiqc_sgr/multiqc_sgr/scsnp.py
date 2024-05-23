@@ -27,10 +27,21 @@ class MultiqcModule(BaseMultiqcModule):
         )
 
         # Find and load any STAR reports
+        stats_data = self.parse_json("stats")
+        gene_data = self.parse_json("gene")
         count_data = self.parse_json("count")
         meta_data = self.parse_json("meta")
-        if all(len(x) == 0 for x in [count_data, meta_data]):
+        if all(len(x) == 0 for x in [stats_data, count_data, meta_data]):
             raise ModuleNoSamplesFound
+
+        self.general_stats(stats_data)
+
+        self.add_section(
+            name="Gene",
+            anchor="scsnp_gene",
+            helptext="Cell Reads assigned to each gene",
+            plot=self.gene_bar(gene_data),
+        )
 
         # assgin plot
         # https://pcingola.github.io/SnpEff/snpsift/extractfields/
@@ -71,15 +82,16 @@ class MultiqcModule(BaseMultiqcModule):
         self.add_software_version(None)
 
     def parse_json(self, seg):
-        data_dict = dict()
+        data_dict = defaultdict(dict)
         for f in self.find_log_files(f"scsnp/{seg}"):
             parsed_data = json.loads(f["f"])
             if parsed_data is not None:
-                s_name = f["s_name"].removesuffix(f".{seg}")
+                x = f["s_name"]
+                s_name = x[: x.find(".scsnp")]
                 if s_name in data_dict:
-                    log.debug(f"Duplicate sample name found! Overwriting: {s_name}")
+                    log.info(f"Duplicate sample name found! Update: {s_name}")
                 self.add_data_source(f, s_name=s_name, section=seg)
-                data_dict[s_name] = parsed_data
+                data_dict[s_name].update(parsed_data)
 
         data_dict = self.ignore_samples(data_dict)
 
@@ -87,6 +99,53 @@ class MultiqcModule(BaseMultiqcModule):
         # Write parsed report data to a file
         self.write_data_file(data_dict, f"multiqc_scsnp_{seg}")
         return data_dict
+
+    def general_stats(self, stats_data):
+        headers = {
+            "Protocol": {
+                "title": "Protocol",
+                "description": "barcode and UMI protocol",
+            },
+            "Raw Reads": {"title": "Raw Reads", "description": "Number of reads from fastq files", "format": "{:,.0f}"},
+            "Valid Reads": {
+                "title": "Valid Reads",
+                "description": "fraction of reads with valid barcode and UMI",
+                "max": 100,
+                "min": 0,
+                "suffix": "%",
+                "scale": "green",
+                "modify": get_frac,
+                "format": "{:,.2f}",
+            },
+            "Mean Used Reads per Cell": {
+                "title": "Mean Used Reads",
+                "description": "Mean Used Reads per Cell: Reads mapped to target genes and remove PCR duplicates",
+                "format": "{:,.0f}",
+            },
+            "Saturation": {
+                "title": "Saturation",
+                "description": "fraction of reads originating from an already-observed reads. saturation = 1 - distinct_reads / total_reads",
+                "max": 100,
+                "min": 0,
+                "suffix": "%",
+                "scale": "green",
+                "modify": get_frac,
+                "format": "{:,.2f}",
+            },
+            "Number of variant after filtering": {
+                "title": "N variant",
+                "description": "Number of variant after filtering",
+                "format": "{:,.0f}",
+            },
+        }
+        self.general_stats_addcols(stats_data, headers=headers)
+
+    def gene_bar(self, gene_data):
+        pconfig = {
+            "id": "gene_read",
+            "title": "Read count per gene",
+        }
+        return bargraph.plot(gene_data, pconfig=pconfig)
 
     def meta_table(self, meta_data):
         name_meta = {}

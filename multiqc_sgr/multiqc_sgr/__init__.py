@@ -3,8 +3,9 @@ def multiqc_sgr_config():
 
     """ Set up MultiQC config defaults for this package """
     sgr_search_patterns = {
-        "general_stats": {"fn": "*general_stats.json"},
-        "scsnp/count": {"fn": "*count.json"},
-        "scsnp/meta": {"fn": "*meta.json"},
+        "scsnp/stats": {"fn": "*scsnp.*stats.json"},
+        "scsnp/gene": {"fn": "*scsnp.gene.json"},
+        "scsnp/count": {"fn": "*scsnp.count.json"},
+        "scsnp/meta": {"fn": "*scsnp.meta.json"},
     }
     config.update_dict(config.sp, sgr_search_patterns)

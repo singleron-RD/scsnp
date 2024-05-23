@@ -14,6 +14,8 @@ include { BCFTOOLS_FILTER        } from '../modules/nf-core/bcftools/filter/main
 include { SNPEFF_DOWNLOAD        } from '../modules/nf-core/snpeff/download/main'
 include { SNPEFF_SNPEFF          } from '../modules/nf-core/snpeff/snpeff/main'
 
+include { PROTOCOL_CMD           } from '../modules/local/protocol_cmd'
+include { STARSOLO_READS         } from '../modules/local/starsolo_reads'
 include { FILTER_BAM             } from '../modules/local/filter_bam'
 include { VCF_STATS              } from '../modules/local/vcf_stats/vcf_stats'
 
@@ -141,53 +143,6 @@ process STAR_GENOME {
     """
 }
 
-process PROTOCOL_CMD {
-    tag "$meta.id"
-    label 'process_single'
-
-    conda 'bioconda::pyfastx=2.1.0'
-    container "biocontainers/pyfastx:2.1.0--py39h3d4b85c_0"
-
-    input:
-    //
-    // Input reads are expected to come as: [ meta, [ pair1_read1, pair1_read2, pair2_read1, pair2_read2 ] ]
-    // Input array for a sample is created in the same order reads appear in samplesheet as pairs from replicates are appended to array.
-    //
-    tuple val(meta), path(reads)
-    path index
-    path assets_dir
-    val protocol
-
-    output:
-    tuple val(meta), path("${meta.id}.starsolo_cmd.txt"), emit: starsolo_cmd
-    path "${meta.id}.protocol.txt", emit: parsed_protocol
-    path  "versions.yml" , emit: versions
-
-    script:
-    def args = task.ext.args ?: ''
-    def prefix = "${meta.id}"
-
-    // separate forward from reverse pairs
-    def (forward, reverse) = reads.collate(2).transpose()
-    """
-    protocol_cmd.py \\
-        --sample ${prefix} \\
-        --genomeDir ${index} \\
-        --fq1 ${forward.join( "," )} \\
-        --fq2 ${reverse.join( "," )} \\
-        --assets_dir ${assets_dir} \\
-        --protocol ${protocol} \\
-        --pattern ${params.pattern} \\
-        --whitelist \"${params.whitelist}\" \\
-        --ext_args \"${args}\" \\
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        pyfastx: \$(pyfastx --version | sed -e "s/pyfastx version //g")
-    END_VERSIONS
-    """
-}
-
 process STARSOLO {
     tag "$meta.id"
     label 'process_medium'
@@ -207,7 +162,7 @@ process STARSOLO {
     tuple val(meta), path('*.out.bam')                , emit: bam
     tuple val(meta), path('*.Solo.out')               , emit: solo_out
     tuple val(meta), path('*Log.final.out')           , emit: log_final
-    path "*.Solo.out/GeneFull_Ex50pAS/Summary.csv"    , emit: summary
+    tuple val(meta), path("*.Solo.out/GeneFull_Ex50pAS/Summary.csv") , emit: summary
     tuple val(meta), path("*.Solo.out/GeneFull_Ex50pAS/CellReads.stats")    , emit: read_stats
     path "${meta.id}.matrix/filtered/barcodes.tsv.gz" , emit: barcodes
     path  "versions.yml"                      , emit: versions
@@ -306,6 +261,7 @@ workflow scsnp {
         "${projectDir}/assets/",
         params.protocol,
     )
+    ch_multiqc_files = ch_multiqc_files.mix(PROTOCOL_CMD.out.json.collect{it[1]})
     ch_versions = ch_versions.mix(PROTOCOL_CMD.out.versions.first())
     ch_starsolo = ch_samplesheet.reads.concat(PROTOCOL_CMD.out.starsolo_cmd)
                 .groupTuple()
@@ -322,6 +278,12 @@ workflow scsnp {
     ch_multiqc_files = ch_multiqc_files.mix(STARSOLO.out.log_final.collect{it[1]})
     ch_versions = ch_versions.mix(STARSOLO.out.versions.first())
 
+    // starsolo reads
+    STARSOLO_READS(
+        STARSOLO.out.summary
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(STARSOLO_READS.out.json.collect{it[1]})
+
     // filter bam
     ch_filter_bam = STARSOLO.out.bam.concat(ch_samplesheet.match_barcode)
                                     .groupTuple()
@@ -332,6 +294,7 @@ workflow scsnp {
         { params.genes ? params.genes : "" },
         { params.panel ? params.panel : "" },
     )
+    ch_multiqc_files = ch_multiqc_files.mix(FILTER_BAM.out.json.collect{it[1]})
 
     // index bam
     SAMTOOLS_INDEX (
@@ -409,8 +372,8 @@ workflow scsnp {
     VCF_STATS (
         SNPEFF_SNPEFF.out.vcf
     )
-    ch_multiqc_files = ch_multiqc_files.mix(VCF_STATS.out.count_json.collect{it[1]})
-        .mix(VCF_STATS.out.meta_json.collect{it[1]})
+    ch_multiqc_files = ch_multiqc_files.mix(VCF_STATS.out.json.collect{it[1]})
+
     //
     // Collate and save software versions
     //
@@ -436,8 +399,8 @@ workflow scsnp {
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList(),
-        "${projectDir}/multiqc_sgr/"
+        "${projectDir}/multiqc_sgr/singleron_logo.png",
+        "${projectDir}/multiqc_sgr/",
     )
 
     emit:
