@@ -3,7 +3,7 @@ process VCF_STATS {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    container "quay.io/singleron-rd/sccore:0.0.0"
+    container "quay.io/singleron-rd/sccore:v0.0.0"
 
     input:
     tuple val(meta), path(vcf)
