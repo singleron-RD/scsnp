@@ -6,7 +6,7 @@ from multiqc.modules.base_module import BaseMultiqcModule, ModuleNoSamplesFound
 from multiqc.plots import bargraph, table
 
 # Initialise the logger
-log = logging.getLogger(__name__)
+log = logging.getLogger("multiqc")
 
 
 def get_frac(x):

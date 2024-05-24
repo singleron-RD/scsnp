@@ -3,6 +3,7 @@ process MULTIQC {
 
     conda "${moduleDir}/environment.yml"
     container "biocontainers/multiqc:1.21--pyhdfd78af_0"
+    containerOptions '--env HOME=/tmp'
 
     input:
     path  multiqc_files, stageAs: "?/*"
@@ -26,7 +27,9 @@ process MULTIQC {
     def extra_config = extra_multiqc_config ? "--config $extra_multiqc_config" : ''
     def logo = multiqc_logo ? /--cl-config 'custom_logo: "${multiqc_logo}"'/ : ''
     """
-    pip install ./${multiqc_plugin} --user
+    cp -r -L ./${multiqc_plugin} ./multiqc.plugin
+    pip install ./multiqc.plugin --no-cache-dir --user
+    export PYTHONNOUSERSITE=0
     multiqc \\
         --force \\
         $args \\
