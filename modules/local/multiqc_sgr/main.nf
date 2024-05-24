@@ -26,7 +26,7 @@ process MULTIQC {
     def extra_config = extra_multiqc_config ? "--config $extra_multiqc_config" : ''
     def logo = multiqc_logo ? /--cl-config 'custom_logo: "${multiqc_logo}"'/ : ''
     """
-    pip install ./${multiqc_plugin}
+    pip install ./${multiqc_plugin} --user
     multiqc \\
         --force \\
         $args \\
