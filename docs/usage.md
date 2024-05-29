@@ -5,7 +5,7 @@
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 4 columns, and a header row as shown in the examples below. An example `samplesheet.csv` can be found [here](https://github.com/singleron-RD/scsnp_test_data)
 
 ```bash
 --input '[path to samplesheet file]'
@@ -16,57 +16,50 @@ You will need to create a samplesheet with information about the samples you wou
 | `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
 | `fastq_1` | Full path to FastQ file reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                                                |
 | `fastq_2` | Full path to FastQ file reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                                                |
+| `match_barcode`| Full path to matched scRNA-Seq barcode.tsv.gz file. 
 
 > [!NOTE]
-> fastq_1 and fastq_2 must be full path. Relative path are not allowed.
+> All path must be full path. Relative path are not allowed.
 
 ### Multiple runs of the same sample
 
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
-
-```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
-```
+The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. 
 
 ### Create `samplesheet.csv` using helper script
 
-When you have many samples, manually creating `samplesheet.csv` can be tedious and error-prone. There is a python script [samplesheet.py](../scripts/samplesheet.py) that can help you create a `samplesheet.csv` file.
+When you have many samples, manually creating `samplesheet.csv` can be tedious and error-prone. There is a python script [manifest.py](https://github.com/singleron-RD/sccore/blob/main/sccore/cli/manifest.py) that can help you create a `samplesheet.csv` file.
+
+```
+pip install sccore
+manifest -m manifest.csv -f /workspaces/scsnp_test_data/NPM1 --match
+```
 
 `-m --manifest` Path to the manifest CSV file containing prefix-sample mapping.
 
-`-f --folders` Comma-separated paths to folders to search for fastq files.
+`-f --folders` Comma-separated paths to folders to search for fastq files. If `--match` is used, all `barcode.tsv.gz` files with sample name in the full path will also be searched. 
 
 manifest.csv
 
 ```
 sample,prefix
-Sample_X,test
-Sample_Y,Sample_Y
+X,prefixX
+Y,prefixY
 ```
 
-/workspaces/scsnp_test_data/GEXSCOPE-V2
-
+/workspaces/scsnp_test_data/NPM1
 ```
-Sample_Y_S1_L001_R1_001.fastq.gz  Sample_Y_S1_L002_R1_001.fastq.gz  test_R1.fastq.gz
-Sample_Y_S1_L001_R2_001.fastq.gz  Sample_Y_S1_L002_R2_001.fastq.gz  test_R2.fastq.gz
-```
-
-Run
-
-```
-python scripts/samplesheet.py -m manifest.csv -f /workspaces/scsnp_test_data/GEXSCOPE-V2
-```
-
-samplesheet.csv
-
-```
-sample,fastq_1,fastq_2
-Sample_X,/workspaces/scsnp_test_data/GEXSCOPE-V2/test_R1.fastq.gz,/workspaces/scsnp_test_data/GEXSCOPE-V2/test_R2.fastq.gz
-Sample_Y,/workspaces/scsnp_test_data/GEXSCOPE-V2/Sample_Y_S1_L001_R1_001.fastq.gz,/workspaces/scsnp_test_data/GEXSCOPE-V2/Sample_Y_S1_L001_R2_001.fastq.gz
-Sample_Y,/workspaces/scsnp_test_data/GEXSCOPE-V2/Sample_Y_S1_L002_R1_001.fastq.gz,/workspaces/scsnp_test_data/GEXSCOPE-V2/Sample_Y_S1_L002_R2_001.fastq.gz
+NPM1/
+├── match_barcode
+│   ├── X.matrix
+│   │   └── barcodes.tsv.gz
+│   └── Y.matrix
+│       └── barcodes.tsv.gz
+├── prefixX_001_R1.fq.gz
+├── prefixX_001_R2.fq.gz
+├── prefixX_002_R1.fq.gz
+├── prefixX_002_R2.fq.gz
+├── prefixY_001_R1.fq.gz
+├── prefixY_001_R2.fq.gz
 ```
 
 ## Running the pipeline

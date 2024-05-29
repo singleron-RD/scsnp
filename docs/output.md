@@ -1,14 +1,36 @@
-# Modules
-
+- [Main output](#main-output)
 - [Modules](#modules)
   - [fastqc](#fastqc)
-  - [filter_gtf](#filter_gtf)
-  - [star_genome](#star_genome)
-  - [protocol_cmd](#protocol_cmd)
+  - [filter\_gtf](#filter_gtf)
+  - [star\_genome](#star_genome)
+  - [protocol\_cmd](#protocol_cmd)
   - [starsolo](#starsolo)
-  - [starsolo_summary](#starsolo_summary)
+  - [freebayes](#freebayes)
   - [multiqc-sgr](#multiqc-sgr)
-  - [pipeline_info](#pipeline_info)
+  - [pipeline\_info](#pipeline_info)
+
+# Main output
+`vcf_stats/{sample}.GT.csv` The genotypes of (cell,variant). Rows are cell barcodes and columns are variants. This file can be used as the input to downstream analysis tools such as Seurat/Scanpy. variants are in the format of `{gene}-{HGVS_C}-{HGVS_P}`
+```
+,IDH2-c.419G>A-p.Arg140Gln,DNMT3A-c.2645G>A-p.Arg882His,NPM1-c.860_863dupTCTG-p.Trp288fs,NPM1-c.*29dupA-
+AAGCTTGCG_CACGCAATA_TGCCTTGGA,NA,NA,NA,NA
+AACACACAG_TTCGAGGAT_GCGAGCTTA,NA,NA,NA,NA
+AACACACAG_CGATAAGGC_TGGTTGTAC,0/0,NA,1/1,0/0
+CTCAGAACT_CAATGCAAC_CTAGGTTGC,NA,NA,0/0,0/0
+```
+
+Genotypes: From the [VCF version 4.1](https://www.internationalgenome.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41): 
+
+GT : genotype, encoded as allele values separated by either of / or |. The allele values are 0 for the reference allele (what is in the REF field), 1 for the first allele listed in ALT, 2 for the second allele list in ALT and so on. For diploid calls examples could be 0/1, 1 | 0, or 1/2, etc.
+
+'NA' means not available(no reads at this position were found).
+
+HGVS_C: Variant in [HGVS DNA notation](https://hgvs-nomenclature.org/stable/recommendations/DNA/substitution/)
+
+HGVS_P: Variant in [HGVS protein notation](https://hgvs-nomenclature.org/stable/recommendations/protein/deletion/)
+
+
+# Modules
 
 ## fastqc
 
@@ -75,9 +97,11 @@ When you have questions, [STAR’s github issue](https://github.com/alexdobin/ST
 - **`{sample}.matrix/filtered`** Gene expression matrix file contains only cell barcodes. This file should be used as input to downstream analysis tools such as Seurat and Scanpy.
 - `{sample}.Aligned.sortedByCoord.out.bam` Bam file contains coordinate-sorted reads aligned to the genome.
 
-## starsolo_summary
+## [freebayes](https://github.com/freebayes/freebayes)
 
-Extract data for visualization from starsolo result files.
+**Output files** 
+
+- `{sample}.vcf.gz` VCF file before filtering.
 
 ## multiqc-sgr
 
