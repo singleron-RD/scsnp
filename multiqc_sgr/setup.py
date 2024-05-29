@@ -16,6 +16,7 @@ setup(
     entry_points={
         "multiqc.modules.v1": [
             "scsnp = multiqc_sgr.scsnp:MultiqcModule",
+            "scrna = multiqc_sgr.scrna:MultiqcModule",
         ],
         "multiqc.hooks.v1": [
             "before_config = multiqc_sgr:multiqc_sgr_config",

@@ -3,6 +3,16 @@ def multiqc_sgr_config():
 
     """ Set up MultiQC config defaults for this package """
     sgr_search_patterns = {
+        "scrna/stats": {"fn": "*scrna.*stats.json"},
+        "scrna/umi_count": {
+            "fn": "*scrna.umi_count.json",
+        },
+        "scrna/saturation": {
+            "fn": "*scrna.saturation.json",
+        },
+        "scrna/median_gene": {
+            "fn": "*scrna.median_gene.json",
+        },
         "scsnp/stats": {"fn": "*scsnp.*stats.json"},
         "scsnp/gene": {"fn": "*scsnp.gene.json"},
         "scsnp/count": {"fn": "*scsnp.count.json"},
