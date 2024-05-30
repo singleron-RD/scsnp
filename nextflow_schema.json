@@ -46,6 +46,21 @@
                 }
             }
         },
+        "target_genes": {
+            "title": "Target genes",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "genes": {
+                    "type": "string",
+                    "description": "Target gene names. Multiple gene names are seperated by comma."
+                }
+            },
+            "required": [
+                "genes"
+            ]
+        },
         "genome": {
             "title": "Genome",
             "type": "object",
@@ -89,20 +104,6 @@
                 "snpeff_cache_version": {
                     "type": "string",
                     "default": "mane.1.0.ensembl"
-                }
-            }
-        },
-        "target_genes": {
-            "title": "Target genes",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "properties": {
-                "panel": {
-                    "type": "string"
-                },
-                "genes": {
-                    "type": "string"
                 }
             }
         },
@@ -370,10 +371,10 @@
             "$ref": "#/definitions/input_output_options"
         },
         {
-            "$ref": "#/definitions/genome"
+            "$ref": "#/definitions/target_genes"
         },
         {
-            "$ref": "#/definitions/target_genes"
+            "$ref": "#/definitions/genome"
         },
         {
             "$ref": "#/definitions/variant_args"

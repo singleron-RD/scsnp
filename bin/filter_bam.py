@@ -89,7 +89,6 @@ if __name__ == "__main__":
     parser.add_argument("--match_barcode_file", help="File containing matched barcodes", required=True)
     parser.add_argument("--sample", help="Sample name", required=True)
     parser.add_argument("--genes", help="Target genes")
-    parser.add_argument("--panel", help="Target genes")
     args = parser.parse_args()
 
     FilterBam(args).run()

@@ -70,6 +70,7 @@ The typical command for running the pipeline is as follows:
 nextflow run singleron-RD/scsnp \
  --input ./samplesheet.csv \
  --outdir ./results \
+ --genes BRAF,EGFR,HRAS,KRAS,NRAS,PIK3CA,TP53 \
  --star_genome path_to_star_genome_index \
  -profile docker
 ```
@@ -103,6 +104,7 @@ with `params.yaml` containing:
 ```yaml
 input: './samplesheet.csv'
 outdir: './results/'
+genes: 'BRAF,EGFR,HRAS,KRAS,NRAS,PIK3CA,TP53'
 star_genome: 'path_to_star_genome_index'
 <...>
 ```
@@ -114,6 +116,13 @@ pip install nf-core
 nf-core launch singleron-RD/scsnp
 ```
 
+### Target genes
+The target gene is specified using the genes parameter. The gene combinations currently provided by the kit are as follows:
+
+- lung: `BRAF,EGFR,HRAS,KRAS,NRAS,PIK3CA,TP53`
+- blood: `IDH1,IDH2,KRAS,TP53,WT1`
+- Clonal hematopoiesis of indeterminate potential (CHIP): `DNMT3A,TET2,JAK2,TP53,ASXL1`
+  
 ### Create genome index
 
 Since indexing is an expensive process in time and resources you should ensure that it is only done once, by retaining the indices generated from each batch of reference files.

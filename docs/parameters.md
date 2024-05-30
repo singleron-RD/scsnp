@@ -13,6 +13,14 @@ Define where the pipeline should find input data and save output data.
 | `email` | Email address for completion summary. <details><summary>Help</summary><small>Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.</small></details>| `string` |  |  |  |
 | `multiqc_title` | MultiQC report title. Printed as page header, used for filename if not otherwise specified. | `string` |  |  |  |
 
+## Target genes
+
+
+
+| Parameter | Description | Type | Default | Required | Hidden |
+|-----------|-----------|-----------|-----------|-----------|-----------|
+| `genes` | Target gene names. Multiple gene names are seperated by comma. | `string` |  | True |  |
+
 ## Genome
 
 Genome files and parameters.
@@ -27,15 +35,6 @@ Genome files and parameters.
 | `star_genome_additional_args` | Additional args to use when generate STAR genome directory. | `string` |  |  |  |
 | `snpeff_genome` |  | `string` | GRCh38 |  |  |
 | `snpeff_cache_version` |  | `string` | mane.1.0.ensembl |  |  |
-
-## Target genes
-
-
-
-| Parameter | Description | Type | Default | Required | Hidden |
-|-----------|-----------|-----------|-----------|-----------|-----------|
-| `panel` |  | `string` |  |  |  |
-| `genes` |  | `string` |  |  |  |
 
 ## Variant args
 

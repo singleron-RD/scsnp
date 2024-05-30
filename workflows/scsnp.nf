@@ -214,11 +214,6 @@ workflow scsnp {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    // validate params
-    if (!params.panel && !params.genes) {
-        error("ERROR: --panel or --genes must be specified.")
-    }
-
     ch_samplesheet.multiMap { meta, fastq, match_barcode ->
         reads: [meta, fastq]
         match_barcode: [meta, match_barcode]
@@ -291,8 +286,7 @@ workflow scsnp {
 
     FILTER_BAM (
         ch_filter_bam,
-        { params.genes ? params.genes : "" },
-        { params.panel ? params.panel : "" },
+        params.genes,
     )
     ch_multiqc_files = ch_multiqc_files.mix(FILTER_BAM.out.json.collect{it[1]})
 
