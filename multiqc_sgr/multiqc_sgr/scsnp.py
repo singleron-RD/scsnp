@@ -57,7 +57,7 @@ class MultiqcModule(BaseMultiqcModule):
 
                 Rank: Exon or Intron rank (i.e. exon number in a transcript)
 
-                VSHG_C: Variant in [HGVS DNA notation](https://hgvs-nomenclature.org/stable/recommendations/DNA/substitution/)
+                HGVS_C: Variant in [HGVS DNA notation](https://hgvs-nomenclature.org/stable/recommendations/DNA/substitution/)
 
                 HGVS_P: Variant in [HGVS protein notation](https://hgvs-nomenclature.org/stable/recommendations/protein/deletion/)
 

@@ -8,6 +8,7 @@ import utils
 
 logger = utils.get_logger(__name__)
 SOLOFEATURE = "GeneFull_Ex50pAS"
+ASSAY = "scsnp"
 
 
 class Starsolo:
@@ -99,7 +100,7 @@ class Starsolo:
 
     def write_stats(self, assay):
         fn = f"{self.args.sample}.{assay}.protocol.stats.json"
-        utils.write_json({"protocol": self.protocol}, fn)
+        utils.write_json({"Protocol": self.protocol}, fn)
 
 
 if __name__ == "__main__":
@@ -122,4 +123,4 @@ if __name__ == "__main__":
 
     runner = Starsolo(args)
     runner.write_cmd()
-    runner.write_stats("scsnp")
+    runner.write_stats(ASSAY)

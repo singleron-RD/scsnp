@@ -91,10 +91,8 @@ When you have questions, [STAR’s github issue](https://github.com/alexdobin/ST
 > [!NOTE]
 > The command line arguments in this STARsolo documentation may not be up to date. For the latest STARSolo arguments, please refer to The STAR Manual.
 
-**Main output files**
+**Output files**
 
-- `{sample}.matrix/raw` Gene expression matrix file contains all barcodes(background + cell) from the barcode whitelist.
-- **`{sample}.matrix/filtered`** Gene expression matrix file contains only cell barcodes. This file should be used as input to downstream analysis tools such as Seurat and Scanpy.
 - `{sample}.Aligned.sortedByCoord.out.bam` Bam file contains coordinate-sorted reads aligned to the genome.
 
 ## [freebayes](https://github.com/freebayes/freebayes)

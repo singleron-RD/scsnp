@@ -71,8 +71,9 @@ nextflow run singleron-RD/scsnp \
  --input ./samplesheet.csv \
  --outdir ./results \
  --genes BRAF,EGFR,HRAS,KRAS,NRAS,PIK3CA,TP53 \
+ --fasta path_to_genome_fasta \
  --star_genome path_to_star_genome_index \
- -profile docker
+ -profile docker 
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -90,9 +91,6 @@ If you wish to repeatedly use the same parameters for multiple runs, rather than
 
 Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`.
 
-> [!WARNING]
-> Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
-
 The above pipeline run specified with a params file in yaml format:
 
 ```bash
@@ -105,6 +103,7 @@ with `params.yaml` containing:
 input: './samplesheet.csv'
 outdir: './results/'
 genes: 'BRAF,EGFR,HRAS,KRAS,NRAS,PIK3CA,TP53'
+fasta: 'path_to_genome_fasta'
 star_genome: 'path_to_star_genome_index'
 <...>
 ```
@@ -217,6 +216,15 @@ Specify this when restarting a pipeline. Nextflow will use cached results from a
 
 You can also supply a run name to resume a specific run: `-resume [run-name]`. Use the `nextflow log` command to show previous run names.
 
+### `-bg`
+
+Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
+
+The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
+
+Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
+Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
+
 ### `-c`
 
 Specify the path to a specific config file (this is a core Nextflow command). See the [nf-core website documentation](https://nf-co.re/usage/configuration) for more information.
@@ -256,15 +264,6 @@ We recommend providing a compute `params.vm_type` of `Standard_D16_v3` VMs by de
 
 Note that the choice of VM size depends on your quota and the overall workload during the analysis.
 For a thorough list, please refer the [Azure Sizes for virtual machines in Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes).
-
-## Running in the background
-
-Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
-
-The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
-
-Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
-Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
 
 ## Nextflow memory requirements
 

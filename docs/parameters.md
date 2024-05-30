@@ -27,7 +27,7 @@ Genome files and parameters.
 
 | Parameter | Description | Type | Default | Required | Hidden |
 |-----------|-----------|-----------|-----------|-----------|-----------|
-| `fasta` | Path to genome fasta. | `string` |  |  |  |
+| `fasta` | Path to genome fasta. | `string` |  | True |  |
 | `gtf` | Path to genome gtf. | `string` |  |  |  |
 | `star_genome` | Path to STAR genome directory. Required if fasta and gtf are not provided. | `string` |  |  |  |
 | `genome_name` | The generated STAR genome index will be saved under this folder. It can then be used for future pipeline runs, reducing processing times. | `string` | star_genome |  |  |
@@ -42,8 +42,8 @@ Genome files and parameters.
 
 | Parameter | Description | Type | Default | Required | Hidden |
 |-----------|-----------|-----------|-----------|-----------|-----------|
-| `freebayes_args` |  | `string` | --use-best-n-alleles 2 --limit-coverage 100 --min-alternate-fraction 0.4 --min-alternate-count 5 --prob-contamination 0.05 --standard-filters |  |  |
-| `bcftools_filter_args` |  | `string` | -e "QUAL<1000" -Oz |  |  |
+| `freebayes_args` |  | `string` | --use-best-n-alleles 2 --limit-coverage 100  --prob-contamination 0.05 --min-alternate-fraction 0.2 --min-supporting-allele-qsum 10000 |  |  |
+| `bcftools_filter_args` |  | `string` | -e "QUAL<1000 || AF<0.05" -Oz |  |  |
 
 ## Optional module
 
