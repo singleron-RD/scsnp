@@ -122,7 +122,7 @@
                 },
                 "bcftools_filter_args": {
                     "type": "string",
-                    "default": "-e \"QUAL<1000 || AF<0.05\" -Oz"
+                    "default": "-i \"QUAL>=1000 && AF>=0.05 && INFO/DP>=1000\" -Oz"
                 }
             }
         },
