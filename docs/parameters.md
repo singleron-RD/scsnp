@@ -1,6 +1,6 @@
 # singleron-RD/scsnp pipeline parameters
 
-single cell RNASeq nextflow pipeline
+nextflow pipeline
 
 ## Input/output options
 

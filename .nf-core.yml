@@ -29,7 +29,7 @@ lint:
 repository_type: pipeline
 template:
   author: zhouyiqi
-  description: single cell RNASeq nextflow pipeline
+  description: nextflow pipeline
   name: scsnp
   prefix: singleron-RD
   skip:
