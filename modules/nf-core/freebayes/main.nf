@@ -1,7 +1,6 @@
 process FREEBAYES {
     tag "$meta.id"
-    cpus '1'
-    memory '12 GB'
+    label 'freebayes_resource'
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
