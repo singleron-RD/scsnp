@@ -310,15 +310,20 @@ workflow scsnp {
 
     // snpeff
     snpeff_db = "${params.snpeff_genome}.${params.snpeff_cache_version}"
-    SNPEFF_DOWNLOAD (
-        [ [id: snpeff_db], params.snpeff_genome, params.snpeff_cache_version]
-    )
-    ch_versions = ch_versions.mix(SNPEFF_DOWNLOAD.out.versions)
-    
+    if (!params.snpeff_cache) {
+        SNPEFF_DOWNLOAD (
+            [ [id: snpeff_db], params.snpeff_genome, params.snpeff_cache_version]
+        )
+        ch_versions = ch_versions.mix(SNPEFF_DOWNLOAD.out.versions)
+        ch_cache = SNPEFF_DOWNLOAD.out.cache
+    } else {
+        ch_cache = [ [], params.snpeff_cache ]
+    }
+
     SNPEFF_SNPEFF (
         BCFTOOLS_FILTER.out.vcf,
         snpeff_db,
-        SNPEFF_DOWNLOAD.out.cache,
+        ch_cache,
     )
     //ch_multiqc_files = ch_multiqc_files.mix(SNPEFF_SNPEFF.out.report.collect{it[1]})
     ch_versions = ch_versions.mix(SNPEFF_SNPEFF.out.versions.first())

@@ -33,8 +33,9 @@ Genome files and parameters.
 | `genome_name` | The generated STAR genome index will be saved under this folder. It can then be used for future pipeline runs, reducing processing times. | `string` | star_genome |  |  |
 | `keep_attributes` | Attributes in gtf to keep. | `string` | gene_biotype=protein_coding,lncRNA,antisense,IG_LV_gene,IG_V_gene,IG_V_pseudogene,IG_D_gene,IG_J_gene,IG_J_pseudogene,IG_C_gene,IG_C_pseudogene,TR_V_gene,TR_V_pseudogene,TR_D_gene,TR_J_gene,TR_J_pseudogene,TR_C_gene; |  |  |
 | `star_genome_additional_args` | Additional args to use when generate STAR genome directory. | `string` |  |  |  |
-| `snpeff_genome` |  | `string` | GRCh38 |  |  |
-| `snpeff_cache_version` |  | `string` | mane.1.0.ensembl |  |  |
+| `snpeff_genome` |  | `string` | GRCh38 | True |  |
+| `snpeff_cache_version` |  | `string` | mane.1.0.ensembl | True |  |
+| `snpeff_cache` | path to snpeff_cache folder. If this parameter is used, the snpeff database in this path will be used. snpeff_download will be skipped. | `string` |  |  |  |
 
 ## Variant args
 
@@ -42,8 +43,8 @@ Genome files and parameters.
 
 | Parameter | Description | Type | Default | Required | Hidden |
 |-----------|-----------|-----------|-----------|-----------|-----------|
-| `freebayes_args` |  | `string` | --use-best-n-alleles 2 --limit-coverage 100  --prob-contamination 0.05 --min-alternate-fraction 0.2 --min-supporting-allele-qsum 10000 |  |  |
-| `bcftools_filter_args` |  | `string` | -i "QUAL>=1000 && AF>=0.05 && INFO/DP>=1000" -Oz |  |  |
+| `freebayes_args` |  | `string` | --use-best-n-alleles 2 --limit-coverage 100  --prob-contamination 0.05 --min-alternate-fraction 0.2 --min-supporting-allele-qsum 10000 | True |  |
+| `bcftools_filter_args` |  | `string` | -i "QUAL>=1000 && AF>=0.05 && INFO/DP>=1000" -Oz | True |  |
 
 ## Optional module
 
