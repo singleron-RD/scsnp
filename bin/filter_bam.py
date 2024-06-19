@@ -13,6 +13,9 @@ from collections import defaultdict
 import pysam
 import utils
 
+MAX_DUP = 1
+MAX_UMI = 10
+
 
 class FilterBam:
     def __init__(self, args):
@@ -24,7 +27,7 @@ class FilterBam:
         self.gene_read = defaultdict(int)
         self.cb_useRead = defaultdict(int)
 
-    def filter(self, max_dup=1):
+    def filter(self):
         """
         for each (barcode,UMI,reference_name,reference_start), keep at most max_duplicate_reads
         """
@@ -49,9 +52,9 @@ class FilterBam:
                     if (cb not in self.match_barcode) or (gn not in self.genes):
                         continue
                     rn, rs = record.reference_name, record.reference_start
-                    self.dup_dict[cb][umi][rn][rs] += 1
+                    self.dup_dict[cb][rn][rs][umi] += 1
                     self.gene_read[gn] += 1
-                    if self.dup_dict[cb][umi][rn][rs] > max_dup:
+                    if self.dup_dict[cb][rn][rs][umi] > MAX_DUP or len(self.dup_dict[cb][rn][rs]) > MAX_UMI:
                         continue
                     self.cb_useRead[cb] += 1
                     record.set_tag(tag="RG", value=record.get_tag("CB"), value_type="Z")
