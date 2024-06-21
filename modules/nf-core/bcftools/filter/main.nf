@@ -2,10 +2,8 @@ process BCFTOOLS_FILTER {
     tag "$meta.id"
     label 'process_single'
 
-    conda "${moduleDir}/environment.yml"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bcftools:1.18--h8b25389_0':
-        'biocontainers/bcftools:1.18--h8b25389_0' }"
+    conda "bioconda::bcftools==1.20"
+    container "biocontainers/bcftools:1.20--h8b25389_0"
 
     input:
     tuple val(meta), path(vcf)

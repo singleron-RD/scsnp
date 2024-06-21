@@ -122,9 +122,18 @@
             "description": "",
             "default": "",
             "properties": {
+                "variant_calling_tool": {
+                    "type": "string",
+                    "default": "bcftools",
+                    "enum": [
+                        "bcftools",
+                        "freebayes"
+                    ],
+                    "description": "bcftools is much faster, but not as sensitive as freebayes in indel calling."
+                },
                 "freebayes_args": {
                     "type": "string",
-                    "default": "--use-best-n-alleles 2 --limit-coverage 100  --prob-contamination 0.05 --min-alternate-fraction 0.2 --min-supporting-allele-qsum 10000"
+                    "default": "--use-best-n-alleles 2 --limit-coverage 30  --prob-contamination 0.05 --min-alternate-fraction 0.2 --min-supporting-allele-qsum 10000"
                 },
                 "bcftools_filter_args": {
                     "type": "string",
@@ -132,8 +141,8 @@
                 }
             },
             "required": [
-                "freebayes_args",
-                "bcftools_filter_args"
+                "bcftools_filter_args",
+                "variant_calling_tool"
             ]
         },
         "optional_module": {

@@ -30,7 +30,7 @@ def extract_fields(record, samples):
     genotypes = []
     for sample in samples:
         genotype = record.samples[sample]["GT"]
-        if genotype == (None,):
+        if genotype == (None,) or genotype == (None, None):
             genotype_str = "NA"
         else:
             g1, g2 = genotype

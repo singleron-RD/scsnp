@@ -43,7 +43,8 @@ Genome files and parameters.
 
 | Parameter | Description | Type | Default | Required | Hidden |
 |-----------|-----------|-----------|-----------|-----------|-----------|
-| `freebayes_args` |  | `string` | --use-best-n-alleles 2 --limit-coverage 100  --prob-contamination 0.05 --min-alternate-fraction 0.2 --min-supporting-allele-qsum 10000 | True |  |
+| `variant_calling_tool` | bcftools is much faster, but not as sensitive as freebayes in indel calling. | `string` | bcftools | True |  |
+| `freebayes_args` |  | `string` | --use-best-n-alleles 2 --limit-coverage 30  --prob-contamination 0.05 --min-alternate-fraction 0.2 --min-supporting-allele-qsum 10000 |  |  |
 | `bcftools_filter_args` |  | `string` | -i "QUAL>=1000 && AF>=0.05 && INFO/DP>=1000" -Oz | True |  |
 
 ## Optional module

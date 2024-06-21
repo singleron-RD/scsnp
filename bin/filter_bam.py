@@ -21,6 +21,8 @@ class FilterBam:
     def __init__(self, args):
         self.args = args
         self.match_barcode = set(utils.read_one_col(args.match_barcode_file))
+        if len(self.match_barcode) > 1e5:
+            raise ValueError("Detected match barcode number > 1e5. Please use the filtered barcodes.tsv.gz, not raw.")
         self.genes = set(args.genes.split(","))
         self.out_bam_file = f"{args.sample}.filtered.bam"
         self.dup_dict = utils.nested_defaultdict(dim=4)

@@ -18,6 +18,7 @@ include { SNPEFF_SNPEFF          } from '../modules/nf-core/snpeff/snpeff/main'
 include { PROTOCOL_CMD           } from '../modules/local/protocol_cmd'
 include { STARSOLO_READS         } from '../modules/local/starsolo_reads'
 include { FILTER_BAM             } from '../modules/local/filter_bam'
+include { BCFTOOLS_CALL          } from '../modules/local/bcftools_call'
 include { VCF_STATS              } from '../modules/local/vcf_stats/vcf_stats'
 include { MULTIQC                } from '../modules/local/multiqc_sgr'
 
@@ -289,22 +290,32 @@ workflow scsnp {
     )
 
     // freebayes
-    ch_bam = GATK4_SPLITNCIGARREADS.out.bam.concat(SAMTOOLS_INDEX2.out.bai)
-                           .groupTuple()
-                           .map { it -> [ it[0],it[1][0],it[1][1],[],[],[] ]}
-    FREEBAYES (
-        ch_bam,
-        [ [], params.fasta ], 
-        SAMTOOLS_FAIDX.out.fai,
-        ch_bam.map { it -> [[],[]] },
-        ch_bam.map { it -> [[],[]] },
-        ch_bam.map { it -> [[],[]] },
-    )
-    ch_versions = ch_versions.mix(FREEBAYES.out.versions.first())
+    if (params.variant_calling_tool=='freebayes') {
+        ch_bam = GATK4_SPLITNCIGARREADS.out.bam.concat(SAMTOOLS_INDEX2.out.bai)
+                            .groupTuple()
+                            .map { it -> [ it[0],it[1][0],it[1][1],[],[],[] ]}
+        FREEBAYES (
+            ch_bam,
+            ch_fasta,
+            SAMTOOLS_FAIDX.out.fai,
+            ch_bam.map { it -> [[],[]] },
+            ch_bam.map { it -> [[],[]] },
+            ch_bam.map { it -> [[],[]] },
+        )
+        ch_versions = ch_versions.mix(FREEBAYES.out.versions.first())
+        ch_vcf = FREEBAYES.out.vcf
+    } else if (params.variant_calling_tool=='bcftools') {
+        BCFTOOLS_CALL (
+            GATK4_SPLITNCIGARREADS.out.bam,
+            ch_fasta,
+        )
+        ch_versions = ch_versions.mix(BCFTOOLS_CALL.out.versions.first())
+        ch_vcf = BCFTOOLS_CALL.out.vcf
+    }
 
     // bcftools filter
     BCFTOOLS_FILTER (
-        FREEBAYES.out.vcf
+        ch_vcf
     )
     ch_versions = ch_versions.mix(BCFTOOLS_FILTER.out.versions.first())
 
