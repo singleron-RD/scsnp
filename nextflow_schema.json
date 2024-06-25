@@ -23,7 +23,6 @@
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
@@ -137,7 +136,7 @@
                 },
                 "bcftools_filter_args": {
                     "type": "string",
-                    "default": "-i \"QUAL>=1000 && AF>=0.05 && INFO/DP>=1000\" -Oz"
+                    "default": "-i \"QUAL>=10000 && AF>=0.05 && INFO/DP>=1000\" -Oz"
                 }
             },
             "required": [
