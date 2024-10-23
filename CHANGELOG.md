@@ -16,3 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Changed`
 - Change the default variant calling tools from `freebayes` to `bcftools` to improve speed.
+
+## 1.3.0 - [2024-10-23]
+
+### `Added`
+- Added parameter `--do-not-fix-overhangs` to GATK `SplitNCigarReads`. This helps detect certain insertions and duplications.

@@ -14,7 +14,7 @@ process BCFTOOLS_CALL {
     path  "versions.yml"                 , emit: versions
 
     script:
-    def args = '--max-depth 1000000 --indels-cns'
+    def args = '--max-depth 1000000 --max-idepth 1000000 --indels-cns'
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
