@@ -1,15 +1,5 @@
-- [Main output](#main-output)
-- [Modules](#modules)
-  - [fastqc](#fastqc)
-  - [filter\_gtf](#filter_gtf)
-  - [star\_genome](#star_genome)
-  - [protocol\_cmd](#protocol_cmd)
-  - [starsolo](#starsolo)
-  - [freebayes](#freebayes)
-  - [multiqc-sgr](#multiqc-sgr)
-  - [pipeline\_info](#pipeline_info)
-
 # Main output
+
 `vcf_stats/{sample}.GT.csv` The genotypes of (cell,variant). Rows are cell barcodes and columns are variants. This file can be used as the input to downstream analysis tools such as Seurat/Scanpy. variants are in the format of `{gene}-{HGVS_C}-{HGVS_P}`
 ```
 ,IDH2-c.419G>A-p.Arg140Gln,DNMT3A-c.2645G>A-p.Arg882His,NPM1-c.860_863dupTCTG-p.Trp288fs,NPM1-c.*29dupA-
