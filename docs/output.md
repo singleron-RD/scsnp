@@ -95,17 +95,15 @@ When you have questions, [STAR’s github issue](https://github.com/alexdobin/ST
 
 - `{sample}.Aligned.sortedByCoord.out.bam` Bam file contains coordinate-sorted reads aligned to the genome.
 
-## [freebayes](https://github.com/freebayes/freebayes)
+## [bcftools](https://samtools.github.io/bcftools/bcftools.html) or [freebayes](https://github.com/freebayes/freebayes)
 
 **Output files** 
 
 - `{sample}.vcf.gz` VCF file before filtering.
 
-## multiqc-sgr
+## multiqc
 
 [MultiQC](http://multiqc.info) is a visualization tool that generates a single HTML report summarising all samples in your project. Most of the pipeline QC results are visualised in the report and further statistics are available in the report data directory.
-
-[multiqc-sgr](https://pypi.org/project/multiqc-sgr/) adds some modules on this basis to facilitate the visualization of single cell-related data.
 
 **Output files**
 
